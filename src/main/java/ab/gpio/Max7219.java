@@ -20,9 +20,6 @@ package ab.gpio;
 import ab.tui.Tui;
 
 import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.IndexColorModel;
 import java.util.function.Consumer;
 
 public class Max7219 implements Tui {
@@ -39,14 +36,13 @@ public class Max7219 implements Tui {
   private final Gpio din;
   private final Gpio cs;
   private final Gpio clk;
-  public final BufferedImage image;
+  private final boolean[][] image;
 
   public Max7219(Gpio din, Gpio cs, Gpio clk) {
-    IndexColorModel colorModel = new IndexColorModel(8, 2, new int[]{0, -1}, 0, false, -1, DataBuffer.TYPE_BYTE);
-    image = new BufferedImage(32, 8, BufferedImage.TYPE_BYTE_INDEXED, colorModel);
     this.din = din;
     this.cs = cs;
     this.clk = clk;
+    this.image = new boolean[8][32];
   }
 
   @Override
@@ -54,20 +50,23 @@ public class Max7219 implements Tui {
     return new Dimension(32, 8);
   }
 
+  /**
+   * @param s '0 .' off '1%#' on
+   * @param attr any
+   */
   @Override
   public void print(int x, int y, String s, int attr) {
-
+    for (char c : s.toCharArray()) image[y][x++] = (c & 1) > 0;
   }
 
   @Override
   public void update() {
-    DataBuffer buffer = image.getRaster().getDataBuffer();
     short[] data = new short[4];
     for (int y = 0; y < 8; y++) {
       for (int i = 0; i < 4; i++) {
         short d = (short) (y + 1 << 8);
         for (int x = 0; x < 8; x++) {
-          if (buffer.getElem(y * 32 + i * 8 + x) > 0) d |= 0x80 >> x;
+          if (image[y][i * 8 + x]) d |= 0x80 >> x;
         }
         data[i] = d;
       }
@@ -120,19 +119,19 @@ public class Max7219 implements Tui {
     din.open();
     cs.open();
     clk.open();
-    writeAll(0x0C00); // disable
+    writeAll(0x0C00); // screen off
     writeAll(0x0F00); // test off
     setBrightness(0); // brightness min
     writeAll(0x0900); // no decode
     writeAll(0x0B07); // all 8 digits/lines
     for (byte i = 1; i <= 8; i++) writeAll(0x100 * i);
-    writeAll(0x0C01); // enable
+    writeAll(0x0C01); // screen on
     return this;
   }
 
   @Override
   public void close() {
-    writeAll(0x0C00); // shutdown
+    writeAll(0x0C00); // screen off
     din.close();
     cs.close();
     clk.close();
