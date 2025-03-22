@@ -17,11 +17,15 @@
 
 package ab.gpio;
 
+import ab.tui.Tui;
+
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
+import java.util.function.Consumer;
 
-public class Max7219 implements AutoCloseable {
+public class Max7219 implements Tui {
 
   //public static final int T_CP_NS = 100; // T_CH_NS + T_CL_NS
   public static final int T_CH_NS = 50;
@@ -45,7 +49,18 @@ public class Max7219 implements AutoCloseable {
     this.clk = clk;
   }
 
-  protected void updateImage() {
+  @Override
+  public Dimension getSize() {
+    return new Dimension(32, 8);
+  }
+
+  @Override
+  public void print(int x, int y, String s, int attr) {
+
+  }
+
+  @Override
+  public void update() {
     DataBuffer buffer = image.getRaster().getDataBuffer();
     short[] data = new short[4];
     for (int y = 0; y < 8; y++) {
@@ -58,10 +73,6 @@ public class Max7219 implements AutoCloseable {
       }
       write(data);
     }
-  }
-
-  public void update() {
-    updateImage();
   }
 
   protected void writeAll(int data) {
@@ -99,7 +110,13 @@ public class Max7219 implements AutoCloseable {
     writeAll(0x0A00 + Math.min(Math.max(0, brightness), 15));
   }
 
-  public void open() {
+  @Override
+  public void setKeyListener(Consumer<String> keyListener) {
+    // no keyboard, do nothing
+  }
+
+  @Override
+  public Max7219 open() {
     din.open();
     cs.open();
     clk.open();
@@ -110,6 +127,7 @@ public class Max7219 implements AutoCloseable {
     writeAll(0x0B07); // all 8 digits/lines
     for (byte i = 1; i <= 8; i++) writeAll(0x100 * i);
     writeAll(0x0C01); // enable
+    return this;
   }
 
   @Override
