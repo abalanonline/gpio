@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ab.gpio;
+package ab.gpio.driver;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

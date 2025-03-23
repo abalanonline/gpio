@@ -17,6 +17,7 @@
 
 package ab.gpio;
 
+import ab.gpio.driver.Gpio;
 import ab.tui.Tui;
 
 import java.awt.Dimension;

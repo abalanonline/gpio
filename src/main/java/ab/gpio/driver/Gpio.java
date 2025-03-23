@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ab.gpio;
+package ab.gpio.driver;
 
 public interface Gpio extends AutoCloseable {
   void open();

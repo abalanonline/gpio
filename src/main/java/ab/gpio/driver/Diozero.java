@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ab.gpio;
+package ab.gpio.driver;
 
 import com.diozero.api.DeviceInterface;
 import com.diozero.api.DeviceMode;
