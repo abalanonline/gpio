@@ -25,6 +25,7 @@ public class Pwm implements BusyRunnable {
   private int i = 0;
   private int pw = 0;
   private int t = 1;
+  private boolean open;
   private final Gpio pin;
   private final BusyRunner runner;
 
@@ -40,12 +41,15 @@ public class Pwm implements BusyRunnable {
 
   @Override
   public void run() {
+    if (!open) return;
     if (i >= t) i = 0;
     pin.set(i++ < pw);
   }
 
   @Override
   public Pwm open() {
+    if (open) throw new IllegalStateException();
+    open = true;
     pin.open();
     runner.add(this);
     return this;
@@ -53,6 +57,7 @@ public class Pwm implements BusyRunnable {
 
   @Override
   public void close() {
+    open = false;
     runner.remove(this);
     pin.close();
   }

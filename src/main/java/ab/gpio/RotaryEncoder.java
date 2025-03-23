@@ -23,36 +23,42 @@ import ab.gpio.driver.Gpio;
 
 public class RotaryEncoder implements BusyRunnable {
 
-  private final Gpio b1;
-  private final Gpio b2;
-  private final Gpio b;
+  private final Gpio clk;
+  private final Gpio dt;
+  private final Gpio sw;
   private final BusyRunner runner;
+  private boolean clkv;
+  public int v;
 
-  public RotaryEncoder(Gpio b1, Gpio b2, Gpio b, BusyRunner runner) {
-    this.b1 = b1;
-    this.b2 = b2;
-    this.b = b;
+  public RotaryEncoder(Gpio clk, Gpio dt, Gpio sw, BusyRunner runner) {
+    this.clk = clk;
+    this.dt = dt;
+    this.sw = sw;
     this.runner = runner;
   }
 
   @Override
   public void run() {
-
+    boolean clkv = !clk.get();
+    if (clkv && !this.clkv) v += dt.get() ? 1 : -1;
+    this.clkv = clkv;
   }
 
   @Override
   public RotaryEncoder open() {
-    b1.open();
-    b2.open();
-    b.open();
+    clk.open();
+    dt.open();
+    sw.open();
+    runner.add(this);
     return this;
   }
 
   @Override
   public void close() {
-    b1.close();
-    b2.close();
-    b.close();
+    runner.remove(this);
+    clk.close();
+    dt.close();
+    sw.close();
   }
 
 }
