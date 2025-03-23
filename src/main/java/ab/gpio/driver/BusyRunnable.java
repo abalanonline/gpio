@@ -27,6 +27,9 @@ public interface BusyRunnable extends Runnable, AutoCloseable {
   @Override
   void run();
 
+  /**
+   * @return {@code this} for fluid chaining
+   */
   BusyRunnable open();
 
   @Override

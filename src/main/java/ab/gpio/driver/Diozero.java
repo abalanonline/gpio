@@ -33,8 +33,9 @@ public class Diozero implements Gpio {
   }
 
   @Override
-  public void open() {
+  public Diozero open() {
     device = new DigitalInputOutputDevice(offset, DeviceMode.DIGITAL_OUTPUT);
+    return this;
   }
 
   @Override

@@ -44,9 +44,10 @@ public class Sysfs implements Gpio {
   }
 
   @Override
-  public void open() {
+  public Sysfs open() {
     in = true;
     in(false);
+    return this;
   }
 
   @Override

@@ -41,8 +41,8 @@ public class Gpiod implements Gpio {
   }
 
   @Override
-  public void open() {
-
+  public Gpiod open() {
+    return this;
   }
 
   @Override

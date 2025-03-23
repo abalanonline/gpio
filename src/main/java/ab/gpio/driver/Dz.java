@@ -17,6 +17,8 @@
 
 package ab.gpio.driver;
 
+import com.diozero.api.GpioEventTrigger;
+import com.diozero.api.GpioPullUpDown;
 import com.diozero.internal.provider.builtin.gpio.GpioChip;
 import com.diozero.internal.provider.builtin.gpio.GpioLine;
 
@@ -42,17 +44,26 @@ public class Dz implements Gpio {
 
   private final int chip;
   private final int offset;
+  private final boolean readOnly;
   private GpioLine line;
 
   public Dz(int chip, int offset) {
+    this(chip, offset, false);
+  }
+
+  public Dz(int chip, int offset, boolean readOnly) {
     this.chip = chip;
     this.offset = offset;
+    this.readOnly = readOnly;
   }
 
   @Override
-  public void open() {
+  public Dz open() {
     if (line != null) throw new IllegalStateException("not closed");
-    line = chips.get(chip).provisionGpioOutputDevice(offset, 0);
+    GpioChip gpioChip = chips.get(chip);
+    line = readOnly ? gpioChip.provisionGpioInputDevice(offset, GpioPullUpDown.NONE, GpioEventTrigger.NONE)
+        : gpioChip.provisionGpioOutputDevice(offset, 0);
+    return this;
   }
 
   @Override
@@ -65,6 +76,7 @@ public class Dz implements Gpio {
 
   @Override
   public void set(boolean v) {
+    if (readOnly) throw new IllegalStateException();
     line.setValue(v ? 1 : 0);
   }
 
