@@ -38,7 +38,7 @@ public class Pwm implements BusyRunnable {
    * 0% and 100% duty cycle applied immediately
    */
   public void setDutyCycle(int pw, int t) {
-    if (pw <= 0) pin.set(false); else if (pw >= t) pin.set(true);
+    if (open && pw <= 0) pin.set(false); else if (open && pw >= t) pin.set(true);
     this.pw = pw;
     this.t = t;
   }
