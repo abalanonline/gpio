@@ -15,10 +15,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ab;
+package ab.gpio;
 
-public class Calculator {
-  public int add(int a, int b) {
-    return a + b;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+public class GpioSystem {
+  public static List<String> devicetreeCompatible() {
+    Path path = Paths.get("/proc/device-tree/compatible");
+    try {
+      return Arrays.asList(Files.readString(path).split("\0"));
+    } catch (IOException e) {
+      return Collections.emptyList();
+    }
   }
 }

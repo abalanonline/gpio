@@ -15,16 +15,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ab;
+package ab.gpio;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
+import java.nio.file.Files;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-class CalculatorTest {
+class GpioSystemTest {
 
   @Test
-  void add() {
-    assertEquals(4, new Calculator().add(2, 2));
+  void devicetreeCompatible() {
+    List<String> compatible;
+    try (MockedStatic<Files> filesMockedStatic = mockStatic(Files.class)) {
+      filesMockedStatic.when(() -> Files.readString(any())).thenReturn("raspberrypi,4-model-b\0brcm,bcm2711\0");
+      compatible = GpioSystem.devicetreeCompatible();
+    }
+    assertEquals(2, compatible.size());
+    assertTrue(compatible.contains("raspberrypi,4-model-b"));
   }
+
 }
