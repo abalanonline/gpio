@@ -38,6 +38,7 @@ public class Max7219 implements Tui {
   private final Gpio cs;
   private final Gpio clk;
   private final boolean[][] image;
+  private boolean open;
 
   public Max7219(Gpio din, Gpio cs, Gpio clk) {
     this.din = din;
@@ -117,6 +118,8 @@ public class Max7219 implements Tui {
 
   @Override
   public Max7219 open() {
+    if (open) throw new IllegalStateException("not closed");
+    open = true;
     din.open();
     cs.open();
     clk.open();
@@ -132,7 +135,8 @@ public class Max7219 implements Tui {
 
   @Override
   public void close() {
-    writeAll(0x0C00); // screen off
+    if (open) writeAll(0x0C00); // screen off
+    open = false;
     din.close();
     cs.close();
     clk.close();
