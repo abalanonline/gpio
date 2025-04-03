@@ -45,7 +45,7 @@
     <dependency>
       <groupId>com.diozero</groupId>
       <artifactId>diozero-core</artifactId>
-      <version>1.4.1</version>
+      <version>1.4.0</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -75,6 +75,17 @@
             <phase>package</phase>
             <goals>
               <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jar-no-fork</goal>
             </goals>
           </execution>
         </executions>
