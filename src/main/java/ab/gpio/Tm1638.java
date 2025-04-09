@@ -91,15 +91,10 @@ public class Tm1638 implements Tui {
   /**
    * Leds located above the line of 7 segment displays, so they have y == -1.
    * They are enabled by '1' and disabled by '0' or the low bit of any other symbol.
-   * Brightness can be changed by writing "0" - "7" to x == -1, y == -1.
    */
   @Override
   public void print(int x, int y, String s, int attr) {
     if (y == -1) {
-      if (x == -1) {
-        brightness = s.charAt(0) - '0';
-        return;
-      }
       for (int i = 0; x < 8 && i < s.length();) led[x++] = (s.charAt(i++) & 1) > 0;
       return;
     }
@@ -109,6 +104,13 @@ public class Tm1638 implements Tui {
   @Override
   public void update() {
     System.arraycopy(digit, 0, frontBuffer, 0, 8);
+  }
+
+  /**
+   * @param brightness 0-7 = 1, 2, 4, 10, 11, 12, 13, 14/16 duty cycle
+   */
+  public void setBrightness(int brightness) {
+    this.brightness = brightness;
   }
 
   @Override
@@ -250,17 +252,31 @@ public class Tm1638 implements Tui {
     Pin clk = new Pin(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
     Pin dio = new Pin(Integer.parseInt(args[4]), Integer.parseInt(args[5]));
 
-    Tm1638 tm1638 = new Tm1638(stb, clk, dio).open();
-    try (final TestTm1638 main = new TestTm1638(tm1638)) {
-      main.speedTest();
-      main.test();
-    }
-    tm1638.close();
-    tm1638.open();
-    try (final TestTm1638 main = new TestTm1638(tm1638)) {
-      main.run();
-    }
-    tm1638.close();
+    try (final Tm1638 tm1638 = new Tm1638(stb, clk, dio).open()) {
+      int[] brightness = new int[1];
+      boolean[] button = new boolean[8];
+      tm1638.setKeyListener(s -> {
+        char c = s.charAt(0);
+        switch (c) {
+          case '-': button[s.charAt(1) - '1'] = false; break;
+          case '+': button[s.charAt(1) - '1'] = true; break;
+          case '1': brightness[0] = Math.max(0, brightness[0] - 1); tm1638.setBrightness(brightness[0]); break;
+          case '2': brightness[0] = Math.min(brightness[0] + 1, 3); tm1638.setBrightness(brightness[0]); break;
+        }
+      });
+      tm1638.setBrightness(0);
+      tm1638.print(0, 0, "        ", 1);
+      for (int i = 0; i < 8; i++) {
+        tm1638.print(0, 0, String.format("push %d  ", i + 1), 1);
+        while (!button[i]) {
+          for (int j = 0; j < 8; j++) {
+            tm1638.print(j, -1, button[j] ? "1" : "0", 1);
+          }
+          tm1638.update();
+          Thread.sleep(50);
+        }
+      }
+    } catch (InterruptedException ignore) {}
   }
 
 }
