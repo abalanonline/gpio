@@ -30,7 +30,10 @@ import java.util.Map;
  * apt install gpiod
  *
  * 775 fps
+ *
+ * @deprecated Use {@link ab.gpio.Pin} instead.
  */
+@Deprecated
 public class Dz implements Gpio {
   static Map<Integer, GpioChip> chips;
   static {

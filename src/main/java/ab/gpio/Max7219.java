@@ -80,7 +80,8 @@ public class Max7219 implements Tui {
     write(new short[]{(short) data, (short) data, (short) data, (short) data});
   }
 
-  protected void write(short[] data) {
+  synchronized protected void write(short[] data) {
+    if (!open) throw new IllegalStateException("closed");
     clk.set(false);
     cs.set(false);
     sleep(T_CSS_NS);

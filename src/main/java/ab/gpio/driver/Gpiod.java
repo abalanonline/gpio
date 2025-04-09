@@ -28,7 +28,10 @@ import java.io.IOException;
  * ls -l /dev/gpiochip*
  *
  * 0.3 fps
+ *
+ * @deprecated Use {@link ab.gpio.Pin} instead.
  */
+@Deprecated
 public class Gpiod implements Gpio {
   private final int chip;
   private final int offset;

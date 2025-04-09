@@ -18,13 +18,17 @@
 package ab.gpio;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GpioSystem {
   public static List<String> devicetreeCompatible() {
@@ -35,4 +39,23 @@ public class GpioSystem {
       return Collections.emptyList();
     }
   }
+
+  /**
+   * Gets the item corresponding to the device name. Used for hardware dependent objects - pins numbers, devices.
+   * Starts search from the first element of the list. Returns default item if device name not found.
+   * @param deviceNames list of device names in /proc/device-tree/compatible format
+   * @param items list of corresponding items
+   * @param defaultItem default item
+   */
+  public static <T> T getByDevice(Collection<String> deviceNames, Collection<T> items, T defaultItem) {
+    Set<String> set = new LinkedHashSet<>(devicetreeCompatible());
+    Iterator<T> itemsIterator = items.iterator();
+    for (String deviceName : deviceNames) {
+      T item = itemsIterator.next();
+      if (set.contains(deviceName)) return item;
+    }
+    java.util.logging.Logger.getAnonymousLogger().info("Using default item for board: " + String.join(", ", set));
+    return defaultItem;
+  }
+
 }

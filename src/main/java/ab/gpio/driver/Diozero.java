@@ -23,7 +23,10 @@ import com.diozero.api.DigitalInputOutputDevice;
 
 /**
  * 733 fps
+ *
+ * @deprecated Use {@link ab.gpio.Pin} instead.
  */
+@Deprecated
 public class Diozero implements Gpio {
   private final int offset;
   private DigitalInputOutputDevice device;

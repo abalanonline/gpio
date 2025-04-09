@@ -15,16 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ab.gpio.driver;
+package ab.gpio;
 
 /**
- * @deprecated Use {@link ab.gpio.Pin} instead.
+ * The reference implementation of GPIO pin. Can be overridden by hardware specific implementations.
  */
-@Deprecated
-public interface Gpio extends AutoCloseable {
-  Gpio open();
-  @Override
-  void close();
-  void set(boolean v);
-  boolean get();
+public class Pin {
 }

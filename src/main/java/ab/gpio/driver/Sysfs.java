@@ -32,7 +32,10 @@ import java.nio.file.Paths;
  * ls -l /sys/class/gpio/gpio485/
  *
  * 39 fps
+ *
+ * @deprecated Use {@link ab.gpio.Pin} instead.
  */
+@Deprecated
 public class Sysfs implements Gpio {
   private final int id;
   private final String fileName;
