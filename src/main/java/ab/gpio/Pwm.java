@@ -19,17 +19,16 @@ package ab.gpio;
 
 import ab.gpio.driver.BusyRunnable;
 import ab.gpio.driver.BusyRunner;
-import ab.gpio.driver.Gpio;
 
 public class Pwm implements BusyRunnable {
   private int i = 0;
   private int pw = 0;
   private int t = 1;
   private boolean open;
-  private final Gpio pin;
+  private final Pin pin;
   private final BusyRunner runner;
 
-  public Pwm(Gpio pin, BusyRunner runner) {
+  public Pwm(Pin pin, BusyRunner runner) {
     this.pin = pin;
     this.runner = runner;
   }
@@ -65,4 +64,25 @@ public class Pwm implements BusyRunnable {
     runner.remove(this);
     pin.close();
   }
+
+  public static void main(String[] args) {
+    if (args.length != 2) {
+      System.out.println("java -cp .jar ab.gpio.Pwm 0 10");
+      System.exit(1);
+    }
+    Pin pin = new Pin(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+
+    try (BusyRunner busyRunner = new BusyRunner().open();
+        Pwm pwm = new Pwm(pin, busyRunner).open()) {
+      for (int i = 0; i < 10; i++) {
+        pwm.setDutyCycle(i + 1, 10);
+        Thread.sleep(100);
+      }
+      for (int i = 0; i < 10; i++) {
+        pwm.setDutyCycle(9 - i, 10);
+        Thread.sleep(100);
+      }
+    } catch (InterruptedException ignore) {}
+  }
+
 }

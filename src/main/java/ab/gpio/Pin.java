@@ -17,8 +17,67 @@
 
 package ab.gpio;
 
+import com.diozero.api.GpioEventTrigger;
+import com.diozero.api.GpioPullUpDown;
+import com.diozero.internal.provider.builtin.gpio.GpioChip;
+import com.diozero.internal.provider.builtin.gpio.GpioLine;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Map;
+
 /**
  * The reference implementation of GPIO pin. Can be overridden by hardware specific implementations.
  */
-public class Pin {
+public class Pin implements AutoCloseable {
+  static Map<Integer, GpioChip> chips;
+  static {
+    try {
+      chips = GpioChip.openAllChips();
+    } catch (IOException e) {
+      throw new UncheckedIOException("Error initialising GPIO chips", e);
+    }
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> chips.values().forEach(GpioChip::close)));
+  }
+
+  private final int chip;
+  private final int offset;
+  private final boolean readOnly;
+  private GpioLine line;
+
+  public Pin(int chip, int offset) {
+    this(chip, offset, false);
+  }
+
+  public Pin(int chip, int offset, boolean readOnly) {
+    this.chip = chip;
+    this.offset = offset;
+    this.readOnly = readOnly;
+  }
+
+  public Pin open() {
+    if (line != null) throw new IllegalStateException("not closed");
+    GpioChip gpioChip = chips.get(chip);
+    line = readOnly ? gpioChip.provisionGpioInputDevice(offset, GpioPullUpDown.NONE, GpioEventTrigger.NONE)
+        : gpioChip.provisionGpioOutputDevice(offset, 0);
+    return this;
+  }
+
+  @Override
+  public void close() {
+    GpioLine line = this.line;
+    if (line == null) return;
+    line.close();
+    this.line = null;
+  }
+
+  public void set(boolean v) {
+    if (readOnly) throw new IllegalStateException();
+    line.setValue(v ? 1 : 0);
+  }
+
+  public boolean get() {
+    return line.getValue() != 0;
+  }
+
 }

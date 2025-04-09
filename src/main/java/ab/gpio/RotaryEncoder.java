@@ -19,7 +19,6 @@ package ab.gpio;
 
 import ab.gpio.driver.BusyRunnable;
 import ab.gpio.driver.BusyRunner;
-import ab.gpio.driver.Gpio;
 import ab.tui.Tui;
 
 import java.awt.Dimension;
@@ -29,9 +28,9 @@ import java.util.function.Consumer;
 
 public class RotaryEncoder implements Tui, BusyRunnable {
 
-  private final Gpio clk;
-  private final Gpio dt;
-  private final Gpio sw;
+  private final Pin clk; // OA
+  private final Pin dt; // OB
+  private final Pin sw;
   private final BusyRunner runner;
   private final BlockingQueue<Integer> queue;
   private Consumer<String> keyListener;
@@ -39,7 +38,7 @@ public class RotaryEncoder implements Tui, BusyRunnable {
   private boolean swv;
   private boolean open;
 
-  public RotaryEncoder(Gpio clk, Gpio dt, Gpio sw, BusyRunner runner) {
+  public RotaryEncoder(Pin clk, Pin dt, Pin sw, BusyRunner runner) {
     this.clk = clk;
     this.dt = dt;
     this.sw = sw;
@@ -120,6 +119,21 @@ public class RotaryEncoder implements Tui, BusyRunnable {
     clk.close();
     dt.close();
     sw.close();
+  }
+
+  public static void main(String[] args) {
+    if (args.length != 6) {
+      System.out.println("java -cp .jar ab.gpio.RotaryEncoder 0 10 0 9 0 11");
+      System.exit(1);
+    }
+    Pin clk = new Pin(Integer.parseInt(args[0]), Integer.parseInt(args[1]), true);
+    Pin dt = new Pin(Integer.parseInt(args[2]), Integer.parseInt(args[3]), true);
+    Pin sw = new Pin(Integer.parseInt(args[4]), Integer.parseInt(args[5]), true);
+    try (BusyRunner busyRunner = new BusyRunner().open();
+        RotaryEncoder encoder = new RotaryEncoder(clk, dt, sw, busyRunner).open()) {
+      encoder.setKeyListener(System.out::println);
+      Thread.sleep(10000);
+    } catch (InterruptedException ignore) {}
   }
 
 }

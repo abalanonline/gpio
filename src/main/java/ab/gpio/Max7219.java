@@ -17,7 +17,6 @@
 
 package ab.gpio;
 
-import ab.gpio.driver.Gpio;
 import ab.tui.Tui;
 
 import java.awt.Dimension;
@@ -34,13 +33,13 @@ public class Max7219 implements Tui {
   public static final int T_DH_NS = 0;
   public static final int T_LDCK_NS = 50;
   public static final int T_CSW_NS = 50;
-  private final Gpio din;
-  private final Gpio cs;
-  private final Gpio clk;
+  private final Pin din;
+  private final Pin cs;
+  private final Pin clk;
   private final boolean[][] image;
   private boolean open;
 
-  public Max7219(Gpio din, Gpio cs, Gpio clk) {
+  public Max7219(Pin din, Pin cs, Pin clk) {
     this.din = din;
     this.cs = cs;
     this.clk = clk;
@@ -143,4 +142,28 @@ public class Max7219 implements Tui {
     clk.close();
   }
 
+  public static void main(String[] args) {
+    if (args.length != 6) {
+      System.out.println("java -cp .jar ab.gpio.Max7219 0 10 0 9 0 11");
+      System.exit(1);
+    }
+    Pin din = new Pin(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+    Pin cs = new Pin(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+    Pin clk = new Pin(Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+    try (Max7219 max7219 = new Max7219(din, cs, clk).open()) {
+      max7219.setBrightness(15);
+      max7219.print(0, 0, "................................", 0);
+      max7219.print(0, 1, "#.#.....#.#......#.#.........#..", 0);
+      max7219.print(0, 2, "#.#.###.#.#..##..#.#..##.##..#.#", 0);
+      max7219.print(0, 3, "###.#...#.#.#.#..#.#.#.#.#.#.#.#", 0);
+      max7219.print(0, 4, "#.#.###.#.#.#.#..#.#.#.#.##..#.#", 0);
+      max7219.print(0, 5, "#.#.#...#.#.#.#..###.#.#.#.#.#.#", 0);
+      max7219.print(0, 6, "#.#..##.#.#.##...###.##..#.#.#.#", 0);
+      max7219.print(0, 7, "................................", 0);
+      max7219.update();
+      Thread.sleep(1000);
+      max7219.setBrightness(0);
+      max7219.update();
+    } catch (InterruptedException ignore) {}
+  }
 }
