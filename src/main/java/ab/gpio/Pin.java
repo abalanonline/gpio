@@ -24,19 +24,33 @@ import com.diozero.internal.provider.builtin.gpio.GpioLine;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * The reference implementation of GPIO pin. Can be overridden by hardware specific implementations.
  */
 public class Pin implements AutoCloseable {
-  static Map<Integer, GpioChip> chips;
+  private static final Map<Integer, GpioChip> chips;
   static {
+    int[] gpiochipIds;
     try {
-      chips = GpioChip.openAllChips();
+      gpiochipIds = Files.list(Paths.get("/dev")).filter(p -> p.getFileName().toString().matches("gpiochip\\d+"))
+          .filter(p -> !Files.isSymbolicLink(p)) // can return false for symlink, witnessed this once
+          .mapToInt(p -> Integer.parseInt(p.getFileName().toString().substring(8))).sorted().toArray();
     } catch (IOException e) {
       throw new UncheckedIOException("Error initialising GPIO chips", e);
     }
+    HashMap<Integer, GpioChip> map = new HashMap<>();
+    for (int gpiochipId : gpiochipIds) {
+      GpioChip gpioChip = GpioChip.openChip("/dev/gpiochip" + gpiochipId);
+      if (gpioChip == null || gpiochipId != gpioChip.getChipId()) continue;
+      map.put(gpiochipId, gpioChip);
+    }
+    chips = Collections.unmodifiableMap(map);
     Runtime.getRuntime().addShutdownHook(new Thread(() -> chips.values().forEach(GpioChip::close)));
   }
 
