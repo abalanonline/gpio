@@ -33,8 +33,8 @@ public class Tm1638 implements Tui {
   private Consumer<String> keyListener;
 
   private int brightness;
-  private final boolean[] led = new boolean[8];
-  private final byte[] digit = new byte[8];
+  protected final boolean[] led = new boolean[8];
+  protected final byte[] digit = new byte[8];
   private final byte[] frontBuffer = new byte[8];
   private final boolean[] button = new boolean[8];
   public final int latencySize = 10001;
